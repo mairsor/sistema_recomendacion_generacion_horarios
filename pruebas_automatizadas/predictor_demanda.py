@@ -11,7 +11,8 @@ class PredictorDemanda:
         # Entrena el modelo con datos de entrada (características de estudiantes/cursos).
         # Cambia un flag interno (self.is_trained = True) para saber si el modelo ya fue entrenado.
         self.is_trained = True
-        pass
+
+        return self.is_trained
 
     def predict_demanda(self, X_test):
         #Predice la demanda esperada de matrícula para un curso o sección específica.
