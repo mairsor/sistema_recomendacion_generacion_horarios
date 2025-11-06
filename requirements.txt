@@ -1,0 +1,13 @@
+# Dependencias necesarias para el modelo y pruebas
+# Añade más paquetes aquí según evolucione el proyecto
+
+numpy>=1.24
+pandas>=1.5
+scikit-learn>=1.2
+sqlalchemy>=1.4
+psycopg2-binary>=2.9
+pytest>=7.0
+
+# Opcionales útiles
+python-dotenv>=1.0  # para leer variables de entorno (opcional)
+joblib>=1.2          # serializar modelos (opcional)
