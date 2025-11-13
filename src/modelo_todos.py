@@ -88,8 +88,8 @@ def predecir_con_modelo(
     
     Parameters
     ----------
-    model : RandomForestRegressor
-        Modelo entrenado.
+    model : RandomForestRegressor or tuple
+        Modelo entrenado o tupla (modelo, metadata).
     df_curso : pd.DataFrame
         Datos del curso.
     features : list
@@ -102,17 +102,28 @@ def predecir_con_modelo(
     dict
         Diccionario con predicciones y estadísticas.
     """
-    # Preparar features (sin drop_target para poder incluir filas sin target)
+    # Si model es una tupla (modelo, metadata), extraer
+    if isinstance(model, tuple):
+        modelo, metadata = model
+        expected_cols = metadata.get('feature_names', None)
+    else:
+        modelo = model
+        # Intentar obtener feature_names del modelo sklearn
+        expected_cols = getattr(modelo, 'feature_names_in_', None)
+        if expected_cols is not None:
+            expected_cols = list(expected_cols)
+    
+    # Preparar features
     if target in df_curso.columns:
-        X, y = preparar_features(df_curso, features, target=target, drop_target=True)
+        X, y = preparar_features(df_curso, features, target=target, drop_target=True, expected_columns=expected_cols)
         tiene_target = True
     else:
-        X, _ = preparar_features(df_curso, features, target=target, drop_target=False)
+        X, _ = preparar_features(df_curso, features, target=target, drop_target=False, expected_columns=expected_cols)
         y = None
         tiene_target = False
     
     # Predecir
-    y_pred = model.predict(X)
+    y_pred = modelo.predict(X)
     
     resultado = {
         'prediccion_media': float(np.mean(y_pred)),
@@ -135,7 +146,8 @@ def procesar_todos_cursos(
     config: Dict[str, Any],
     general_model_path: Optional[str] = None,
     use_cached: bool = True,
-    train_specific: bool = True
+    train_specific: bool = True,
+    force_model_type: Optional[str] = None
 ) -> pd.DataFrame:
     """
     Procesa todos los cursos únicos en el dataset.
@@ -152,6 +164,11 @@ def procesar_todos_cursos(
         Si True, usa modelos específicos existentes si los encuentra.
     train_specific : bool
         Si True, entrena modelos específicos cuando hay historia suficiente.
+    force_model_type : str, optional
+        Fuerza el uso de un tipo específico de modelo:
+        - 'general': Solo usar modelo general para todos los cursos
+        - 'specific': Solo usar modelos específicos (entrena si es necesario)
+        - None: Usa estrategia automática (default)
     
     Returns
     -------
@@ -202,37 +219,9 @@ def procesar_todos_cursos(
         prediccion = None
         model_path = None
         
-        # Estrategia: 1) Buscar modelo específico existente
-        if use_cached:
-            model_path = buscar_modelo_especifico(curso, output_dir)
-            if model_path:
-                logger.info(f"Modelo específico encontrado: {model_path}")
-                try:
-                    modelo_especifico = cargar_modelo(model_path)
-                    resultado = predecir_con_modelo(modelo_especifico, df_curso, features, target)
-                    prediccion = resultado['prediccion_media']
-                    mae = resultado['mae']
-                    modelo_usado = f'especifico_cached ({Path(model_path).name})'
-                except Exception as e:
-                    logger.warning(f"Error al usar modelo específico cached: {e}")
-        
-        # Estrategia 2) Entrenar modelo específico si hay historia suficiente
-        if modelo_usado is None and train_specific and n_registros >= min_history:
-            logger.info(f"Entrenando modelo específico (historia: {n_registros} >= {min_history})...")
-            try:
-                model_path = entrenar_y_guardar_especifico(df, curso, config, force=False)
-                if model_path:
-                    modelo_especifico = cargar_modelo(model_path)
-                    resultado = predecir_con_modelo(modelo_especifico, df_curso, features, target)
-                    prediccion = resultado['prediccion_media']
-                    mae = resultado['mae']
-                    modelo_usado = f'especifico_nuevo ({Path(model_path).name})'
-            except Exception as e:
-                logger.warning(f"Error al entrenar modelo específico: {e}")
-        
-        # Estrategia 3) Usar modelo general como fallback
-        if modelo_usado is None:
-            logger.info(f"Usando modelo general como fallback (historia: {n_registros} < {min_history})")
+        # MODO FORZADO: Solo modelo general
+        if force_model_type == 'general':
+            logger.info(f"Modo forzado: usando SOLO modelo general")
             
             if modelo_general is None:
                 logger.warning("Modelo general no disponible. Entrenando...")
@@ -243,12 +232,99 @@ def procesar_todos_cursos(
                 resultado = predecir_con_modelo(modelo_general, df_curso, features, target)
                 prediccion = resultado['prediccion_media']
                 mae = resultado['mae']
-                modelo_usado = 'general'
+                modelo_usado = 'general (forzado)'
             except Exception as e:
                 logger.error(f"Error al usar modelo general: {e}")
                 prediccion = None
                 mae = None
                 modelo_usado = 'error'
+        
+        # MODO FORZADO: Solo modelos específicos
+        elif force_model_type == 'specific':
+            logger.info(f"Modo forzado: usando SOLO modelo específico")
+            
+            # Intentar cargar modelo específico cached
+            if use_cached:
+                model_path = buscar_modelo_especifico(curso, output_dir)
+                if model_path:
+                    logger.info(f"Modelo específico encontrado: {model_path}")
+                    try:
+                        modelo_especifico = cargar_modelo(model_path)
+                        resultado = predecir_con_modelo(modelo_especifico, df_curso, features, target)
+                        prediccion = resultado['prediccion_media']
+                        mae = resultado['mae']
+                        modelo_usado = f'especifico_cached ({Path(model_path).name})'
+                    except Exception as e:
+                        logger.warning(f"Error al usar modelo específico cached: {e}")
+            
+            # Si no hay cached o falló, entrenar nuevo
+            if modelo_usado is None:
+                if n_registros >= min_history:
+                    logger.info(f"Entrenando modelo específico...")
+                    try:
+                        model_path = entrenar_y_guardar_especifico(df, curso, config, force=False)
+                        if model_path:
+                            modelo_especifico = cargar_modelo(model_path)
+                            resultado = predecir_con_modelo(modelo_especifico, df_curso, features, target)
+                            prediccion = resultado['prediccion_media']
+                            mae = resultado['mae']
+                            modelo_usado = f'especifico_nuevo ({Path(model_path).name})'
+                    except Exception as e:
+                        logger.error(f"Error al entrenar modelo específico: {e}")
+                        modelo_usado = 'error'
+                else:
+                    logger.error(f"Historia insuficiente para modelo específico ({n_registros} < {min_history})")
+                    modelo_usado = 'error (historia insuficiente)'
+        
+        # MODO AUTOMÁTICO: Estrategia inteligente (default)
+        else:
+            # Estrategia: 1) Buscar modelo específico existente
+            if use_cached:
+                model_path = buscar_modelo_especifico(curso, output_dir)
+                if model_path:
+                    logger.info(f"Modelo específico encontrado: {model_path}")
+                    try:
+                        modelo_especifico = cargar_modelo(model_path)
+                        resultado = predecir_con_modelo(modelo_especifico, df_curso, features, target)
+                        prediccion = resultado['prediccion_media']
+                        mae = resultado['mae']
+                        modelo_usado = f'especifico_cached ({Path(model_path).name})'
+                    except Exception as e:
+                        logger.warning(f"Error al usar modelo específico cached: {e}")
+            
+            # Estrategia 2) Entrenar modelo específico si hay historia suficiente
+            if modelo_usado is None and train_specific and n_registros >= min_history:
+                logger.info(f"Entrenando modelo específico (historia: {n_registros} >= {min_history})...")
+                try:
+                    model_path = entrenar_y_guardar_especifico(df, curso, config, force=False)
+                    if model_path:
+                        modelo_especifico = cargar_modelo(model_path)
+                        resultado = predecir_con_modelo(modelo_especifico, df_curso, features, target)
+                        prediccion = resultado['prediccion_media']
+                        mae = resultado['mae']
+                        modelo_usado = f'especifico_nuevo ({Path(model_path).name})'
+                except Exception as e:
+                    logger.warning(f"Error al entrenar modelo específico: {e}")
+            
+            # Estrategia 3) Usar modelo general como fallback
+            if modelo_usado is None:
+                logger.info(f"Usando modelo general como fallback (historia: {n_registros} < {min_history})")
+                
+                if modelo_general is None:
+                    logger.warning("Modelo general no disponible. Entrenando...")
+                    model_path = entrenar_y_guardar_general(df, config)
+                    modelo_general = cargar_modelo(model_path)
+                
+                try:
+                    resultado = predecir_con_modelo(modelo_general, df_curso, features, target)
+                    prediccion = resultado['prediccion_media']
+                    mae = resultado['mae']
+                    modelo_usado = 'general'
+                except Exception as e:
+                    logger.error(f"Error al usar modelo general: {e}")
+                    prediccion = None
+                    mae = None
+                    modelo_usado = 'error'
         
         # Obtener datos adicionales del curso
         cupo_maximo = df_curso['cupo_maximo'].mean()
@@ -265,7 +341,8 @@ def procesar_todos_cursos(
         })
         
         logger.info(f"✓ Curso {curso} procesado.")
-        logger.info(f"  - Predicción: {prediccion:.1f if prediccion else 'N/A'}")
+        pred_str = f"{prediccion:.1f}" if prediccion is not None else "N/A"
+        logger.info(f"  - Predicción: {pred_str}")
         logger.info(f"  - Modelo: {modelo_usado}")
     
     # Crear DataFrame de resultados
@@ -320,6 +397,13 @@ def main():
         action='store_true',
         help='Entrenar modelo general automáticamente si no se proporciona'
     )
+    parser.add_argument(
+        '--model_type',
+        type=str,
+        choices=['general', 'specific', 'auto'],
+        default='auto',
+        help='Tipo de modelo a usar: general (solo general), specific (solo específicos), auto (estrategia automática)'
+    )
     
     args = parser.parse_args()
     
@@ -335,13 +419,17 @@ def main():
         # Cargar datos
         df = cargar_datos_csv(args.data)
         
+        # Determinar force_model_type
+        force_type = None if args.model_type == 'auto' else args.model_type
+        
         # Procesar todos los cursos
         df_resultados = procesar_todos_cursos(
             df=df,
             config=config,
             general_model_path=args.general_model,
             use_cached=args.use_cached,
-            train_specific=not args.no_train_specific
+            train_specific=not args.no_train_specific,
+            force_model_type=force_type
         )
         
         # Guardar resultados

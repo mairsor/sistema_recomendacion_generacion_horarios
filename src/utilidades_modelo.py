@@ -174,11 +174,40 @@ def calcular_alumnos_elegibles(
     return df
 
 
+def alinear_columnas_con_modelo(X_pred: pd.DataFrame, X_train_cols: List[str]) -> pd.DataFrame:
+    """
+    Alinea las columnas de predicción con las del entrenamiento.
+    Agrega columnas faltantes con 0 y elimina columnas extras.
+    
+    Parameters
+    ----------
+    X_pred : pd.DataFrame
+        DataFrame de predicción con posibles columnas diferentes.
+    X_train_cols : list
+        Lista de nombres de columnas que el modelo espera.
+    
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame con columnas alineadas.
+    """
+    # Agregar columnas faltantes con 0
+    for col in X_train_cols:
+        if col not in X_pred.columns:
+            X_pred[col] = 0
+    
+    # Ordenar columnas en el mismo orden que el entrenamiento
+    X_pred = X_pred[X_train_cols]
+    
+    return X_pred
+
+
 def preparar_features(
     df: pd.DataFrame,
     features: List[str],
     target: str = 'alumnos_matriculados',
-    drop_target: bool = True
+    drop_target: bool = True,
+    expected_columns: Optional[List[str]] = None
 ) -> Tuple[pd.DataFrame, Optional[pd.Series]]:
     """
     Prepara las features para el modelo:
@@ -249,6 +278,11 @@ def preparar_features(
     if categorical_cols:
         logger.info(f"Aplicando one-hot encoding a: {categorical_cols}")
         X = pd.get_dummies(X, columns=categorical_cols, drop_first=True)
+    
+    # Alinear columnas si se especificó expected_columns
+    if expected_columns is not None:
+        logger.info(f"Alineando columnas con las esperadas por el modelo...")
+        X = alinear_columnas_con_modelo(X, expected_columns)
     
     logger.info(f"Features finales: {X.shape[1]} columnas, {X.shape[0]} filas")
     logger.info(f"Nombres de columnas finales: {list(X.columns)}")

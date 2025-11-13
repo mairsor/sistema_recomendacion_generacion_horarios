@@ -12,7 +12,7 @@ features:
   - experiencia_anios
   - alumnos_elegibles
   - cupo_maximo
-  - profesor_popularidad  # Puede incluir features adicionales si están disponibles
+  - profesor_popularidad 
 
 # Hiperparámetros del RandomForestRegressor
 # Ajustados para un curso específico (puede requerir menos árboles)
