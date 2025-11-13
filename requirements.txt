@@ -1,13 +1,25 @@
-# Dependencias necesarias para el modelo y pruebas
-# Añade más paquetes aquí según evolucione el proyecto
+# Dependencias necesarias para el modelo de predicción de demanda
+# Proyecto: Predicción de Demanda de Cursos (UNI)
 
+# Librerías core de ML y data science
 numpy>=1.24
 pandas>=1.5
 scikit-learn>=1.2
+imbalanced-learn>=0.10
+
+# Serialización y configuración
+joblib>=1.2          # serializar modelos
+pyyaml>=6.0          # leer archivos de configuración YAML
+
+# Base de datos (para conexión futura)
 sqlalchemy>=1.4
 psycopg2-binary>=2.9
+
+# Testing
 pytest>=7.0
 
-# Opcionales útiles
+# CLI (opcional pero recomendado)
+# typer>=0.9         # descomenta si quieres usar typer para CLI más avanzado
+
+# Utilidades
 python-dotenv>=1.0  # para leer variables de entorno (opcional)
-joblib>=1.2          # serializar modelos (opcional)
