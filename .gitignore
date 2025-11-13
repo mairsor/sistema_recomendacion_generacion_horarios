@@ -1,6 +1,3 @@
-# Archivo de conexión legacy (mantener por ahora)
-modelo_predictor/src/conexion_db.py
-
 # Variables de entorno - NUNCA subir a GitHub
 .env
 
