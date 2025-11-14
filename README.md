@@ -56,7 +56,6 @@ El archivo CSV debe contener las siguientes columnas:
 | `num_prerrequisitos` | int | Cantidad de prerrequisitos | `2` |
 | `tasa_aprobacion` | float | Tasa de aprobación histórica (0-1) | `0.80` (80%) |
 | `franja_horaria` | int | 1=mañana, 2=tarde, 3=noche | `1` |
-| `experiencia_anios` | int | Años de experiencia del profesor | `10` |
 | `cupo_maximo` | int | Capacidad máxima de la sección | `50` |
 | `alumnos_matriculados` | int | **TARGET** - Alumnos realmente matriculados | `48` |
 
@@ -177,7 +176,6 @@ features:
   - num_prerrequisitos
   - tasa_aprobacion
   - franja_horaria
-  - experiencia_anios
   - alumnos_elegibles
   - cupo_maximo
   - tipo_curso

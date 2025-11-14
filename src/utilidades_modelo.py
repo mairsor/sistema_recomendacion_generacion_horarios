@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 REQUIRED_COLUMNS = [
     'curso_ofertado_id', 'nombre_seccion', 'codigo_curso', 'semestre', 'creditos', 
     'tipo_curso', 'profesor_id', 'alumnos_previos', 'variacion_matricula', 
-    'num_prerrequisitos', 'tasa_aprobacion', 'franja_horaria', 'experiencia_anios', 
+    'num_prerrequisitos', 'tasa_aprobacion', 'franja_horaria', 
     'cupo_maximo', 'alumnos_matriculados'
 ]
 
@@ -41,7 +41,7 @@ OPTIONAL_COLUMNS = ['profesor_popularidad', 'alumnos_elegibles']
 # Features por defecto para el modelo
 DEFAULT_FEATURES = [
     'creditos', 'alumnos_previos', 'variacion_matricula', 'num_prerrequisitos',
-    'tasa_aprobacion', 'franja_horaria', 'experiencia_anios', 'alumnos_elegibles',
+    'tasa_aprobacion', 'franja_horaria', 'alumnos_elegibles',
     'cupo_maximo', 'tipo_curso'
 ]
 
@@ -499,7 +499,6 @@ if __name__ == "__main__":
         'num_prerrequisitos': [2, 2, 1],
         'tasa_aprobacion': [0.80, 0.82, 0.75],
         'franja_horaria': [1, 2, 1],
-        'experiencia_anios': [10, 10, 5],
         'alumnos_elegibles': [60, 65, 35],
         'cupo_maximo': [50, 50, 40],
         'alumnos_matriculados': [48, 49, 32]

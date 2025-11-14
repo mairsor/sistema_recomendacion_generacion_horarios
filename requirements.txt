@@ -23,3 +23,8 @@ pytest>=7.0
 
 # Utilidades
 python-dotenv>=1.0  # para leer variables de entorno (opcional)
+
+# API REST
+fastapi>=0.104.0    # framework web moderno para crear APIs
+uvicorn[standard]>=0.24.0  # servidor ASGI para ejecutar FastAPI
+python-multipart>=0.0.6    # soporte para form data en FastAPI

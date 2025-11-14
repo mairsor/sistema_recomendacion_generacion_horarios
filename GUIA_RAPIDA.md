@@ -63,12 +63,12 @@ python src/utilidades_modelo.py
 
 El CSV debe tener estas columnas:
 
-**Obligatorias (15):**
+**Obligatorias (14):**
 - curso_ofertado_id (int, PK), nombre_seccion (string), codigo_curso (string)
 - semestre (string), creditos (int), tipo_curso (string)
 - profesor_id (int, FK), alumnos_previos (int), variacion_matricula (float)
 - num_prerrequisitos (int), tasa_aprobacion (float), franja_horaria (int)
-- experiencia_anios (int), cupo_maximo (int), alumnos_matriculados (int, target)
+- cupo_maximo (int), alumnos_matriculados (int, target)
 
 **Opcionales (2):**
 - profesor_popularidad (float), alumnos_elegibles (int)

@@ -9,7 +9,6 @@ features:
   - num_prerrequisitos
   - tasa_aprobacion
   - franja_horaria
-  - experiencia_anios
   - alumnos_elegibles
   - cupo_maximo
   - profesor_popularidad 

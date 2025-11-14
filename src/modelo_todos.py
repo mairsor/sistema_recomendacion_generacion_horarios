@@ -147,7 +147,8 @@ def procesar_todos_cursos(
     general_model_path: Optional[str] = None,
     use_cached: bool = True,
     train_specific: bool = True,
-    force_model_type: Optional[str] = None
+    force_model_type: Optional[str] = None,
+    cursos_filtrados: Optional[list] = None
 ) -> pd.DataFrame:
     """
     Procesa todos los cursos únicos en el dataset.
@@ -169,6 +170,8 @@ def procesar_todos_cursos(
         - 'general': Solo usar modelo general para todos los cursos
         - 'specific': Solo usar modelos específicos (entrena si es necesario)
         - None: Usa estrategia automática (default)
+    cursos_filtrados : list, optional
+        Lista de códigos de curso a procesar. Si None, procesa todos.
     
     Returns
     -------
@@ -194,6 +197,24 @@ def procesar_todos_cursos(
     
     # Obtener lista de cursos únicos
     cursos = df['codigo_curso'].unique()
+    
+    # Filtrar cursos si se especificaron
+    if cursos_filtrados:
+        cursos_disponibles = set(cursos)
+        cursos_solicitados = set(cursos_filtrados)
+        cursos_no_encontrados = cursos_solicitados - cursos_disponibles
+        
+        if cursos_no_encontrados:
+            logger.warning(f"Cursos no encontrados en el dataset: {cursos_no_encontrados}")
+        
+        cursos = [c for c in cursos if c in cursos_solicitados]
+        
+        if not cursos:
+            logger.error("Ninguno de los cursos solicitados existe en el dataset")
+            return pd.DataFrame()
+        
+        logger.info(f"Cursos filtrados: {cursos}")
+    
     logger.info(f"Total de cursos únicos: {len(cursos)}")
     
     # Configuración
@@ -404,6 +425,12 @@ def main():
         default='auto',
         help='Tipo de modelo a usar: general (solo general), specific (solo específicos), auto (estrategia automática)'
     )
+    parser.add_argument(
+        '--courses',
+        type=str,
+        default=None,
+        help='Curso(s) específico(s) a procesar. Para un solo curso: "CIB02". Para varios: "CIB02,MAT101,FIS201". Si no se especifica, procesa todos los cursos.'
+    )
     
     args = parser.parse_args()
     
@@ -422,14 +449,21 @@ def main():
         # Determinar force_model_type
         force_type = None if args.model_type == 'auto' else args.model_type
         
-        # Procesar todos los cursos
+        # Parsear cursos si se especificaron
+        cursos_filtrados = None
+        if args.courses:
+            cursos_filtrados = [c.strip() for c in args.courses.split(',')]
+            logger.info(f"Cursos solicitados: {cursos_filtrados}")
+        
+        # Procesar todos los cursos (o los filtrados)
         df_resultados = procesar_todos_cursos(
             df=df,
             config=config,
             general_model_path=args.general_model,
             use_cached=args.use_cached,
             train_specific=not args.no_train_specific,
-            force_model_type=force_type
+            force_model_type=force_type,
+            cursos_filtrados=cursos_filtrados
         )
         
         # Guardar resultados

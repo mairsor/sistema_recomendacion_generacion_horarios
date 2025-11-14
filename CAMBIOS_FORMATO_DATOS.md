@@ -101,13 +101,12 @@ variacion_matricula (float)
 num_prerrequisitos (int)
 tasa_aprobacion (float)
 franja_horaria (int)
-experiencia_anios (int)
 alumnos_elegibles (int)
 cupo_maximo (int)
 alumnos_matriculados (int) - TARGET
 ```
 
-**Total:** 17 columnas (15 obligatorias + 2 opcionales)
+**Total:** 16 columnas (14 obligatorias + 2 opcionales)
 
 ## 🎯 Compatibilidad con Base de Datos
 
