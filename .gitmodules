@@ -1,0 +1,12 @@
+[submodule "backend"]
+	path = backend
+	url = https://github.com/EduardoVillegasB02/schedule-recommendation-backend.git
+[submodule "frontend"]
+	path = frontend
+	url = https://github.com/mairsor/predictor-recomendador-generador_frontend
+[submodule "recomendador_cursos_api"]
+	path = recomendador_cursos_api
+	url = https://github.com/Vouresz/Mod_Recomendador
+[submodule "predictor_demanda_api"]
+	path = predictor_demanda_api
+	url = https://github.com/mairsor/predictor-demanda-api.git

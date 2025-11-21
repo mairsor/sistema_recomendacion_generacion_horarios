@@ -1,39 +1,149 @@
-# docker-compose.yml - Orquestación de contenedores
-# Proyecto: Predicción de Demanda de Cursos (UNI)
-# Última actualización: 2025-11-20
+# docker-compose.yml - Orquestación de todos los microservicios
+# Sistema de Recomendación y Generación de Horarios - UNI
+# Fecha: 2025-11-20
 
 version: '3.8'
 
 services:
-  # Servicio principal de la API
-  api:
+  # ========================================
+  # Frontend - Interfaz de usuario
+  # ========================================
+  frontend:
     build:
-      context: .
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: horarios_frontend
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - NEXT_PUBLIC_BACKEND_URL=http://backend:${BACKEND_PORT:-4000}
+      - NEXT_PUBLIC_PREDICTOR_URL=http://predictor_demanda_api:${PREDICTOR_PORT:-8000}
+      - NEXT_PUBLIC_RECOMENDADOR_URL=http://recomendador_cursos_api:${RECOMENDADOR_PORT:-8001}
+    depends_on:
+      - backend
+      - predictor_demanda_api
+      - recomendador_cursos_api
+    networks:
+      - horarios_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ========================================
+  # Backend - API principal (NestJS/Node.js)
+  # ========================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: horarios_backend
+    ports:
+      - "${BACKEND_PORT:-4000}:4000"
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=${BACKEND_PORT:-4000}
+      # Variables de base de datos
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT:-5432}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
+      # URLs de microservicios
+      - PREDICTOR_API_URL=http://predictor_demanda_api:${PREDICTOR_PORT:-8000}
+      - RECOMENDADOR_API_URL=http://recomendador_cursos_api:${RECOMENDADOR_PORT:-8001}
+      # JWT y seguridad
+      - JWT_SECRET=${JWT_SECRET:-change_this_secret_in_production}
+      - JWT_EXPIRATION=${JWT_EXPIRATION:-24h}
+    volumes:
+      - ./backend/logs:/app/logs
+    networks:
+      - horarios_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # ========================================
+  # API Predictor de Demanda (FastAPI/Python)
+  # ========================================
+  predictor_demanda_api:
+    build:
+      context: ./predictor_demanda_api
       dockerfile: Dockerfile
     container_name: predictor_demanda_api
     ports:
-      - "8000:8000"
-    volumes:
-      # Montar directorios para persistencia de datos
-      - ./data:/app/data
-      - ./models:/app/models
-      - ./results:/app/results
-      - ./configs:/app/configs
+      - "${PREDICTOR_PORT:-8000}:8000"
     environment:
-      - ENVIRONMENT=production
-      - LOG_LEVEL=info
-      # Variables de base de datos (conectar a PostgreSQL del host)
-      - DB_HOST=host.docker.internal
-      - DB_PORT=5432
-      - DB_NAME=${DB_NAME:-uni_db}
-      - DB_USER=${DB_USER:-postgres}
-      - DB_PASSWORD=${DB_PASSWORD:-postgres}
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - ENVIRONMENT=${ENVIRONMENT:-production}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      # Variables de base de datos
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT:-5432}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
+    volumes:
+      - ./predictor_demanda_api/data:/app/data
+      - ./predictor_demanda_api/models:/app/models
+      - ./predictor_demanda_api/results:/app/results
+      - ./predictor_demanda_api/configs:/app/configs
+    networks:
+      - horarios_network
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health')"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 10s
+      start_period: 20s
+
+  # ========================================
+  # API Recomendador de Cursos (FastAPI/Python)
+  # ========================================
+  recomendador_cursos_api:
+    build:
+      context: ./recomendador_cursos_api
+      dockerfile: Dockerfile
+    container_name: recomendador_cursos_api
+    ports:
+      - "${RECOMENDADOR_PORT:-8001}:8001"
+    environment:
+      - ENVIRONMENT=${ENVIRONMENT:-production}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      # Variables de base de datos
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT:-5432}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
+    volumes:
+      - ./recomendador_cursos_api/models:/app/models
+      - ./recomendador_cursos_api/data:/app/data
+    networks:
+      - horarios_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8001/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+# ========================================
+# Redes
+# ========================================
+networks:
+  horarios_network:
+    driver: bridge
+    name: horarios_network
