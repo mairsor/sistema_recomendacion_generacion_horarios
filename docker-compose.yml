@@ -12,6 +12,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      network: host
     container_name: horarios_frontend
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
@@ -97,6 +98,9 @@ services:
       - ./predictor_demanda_api/models:/app/models
       - ./predictor_demanda_api/results:/app/results
       - ./predictor_demanda_api/configs:/app/configs
+      - ./predictor_demanda_api/api:/app/api
+      - ./predictor_demanda_api/scripts:/app/scripts
+      - ./predictor_demanda_api/src:/app/src
     networks:
       - horarios_network
     restart: unless-stopped
