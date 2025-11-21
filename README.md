@@ -107,6 +107,49 @@ Una vez levantados los contenedores:
   - Filtrado colaborativo
   - Análisis de historial académico
 
+## 📖 Documentación de APIs
+
+Cada microservicio tiene su propia documentación detallada:
+
+### 📘 Documentación Consolidada
+**[APIs_CONSOLIDADO.md](./APIs_CONSOLIDADO.md)** - Vista general de las 3 APIs con ejemplos, arquitectura y flujos de integración.
+
+### 📄 Documentación Individual
+
+1. **Backend API (NestJS)**
+   - **Archivo**: [backend/API_DOCUMENTATION.md](./backend/API_DOCUMENTATION.md)
+   - **Endpoints**: 40+ endpoints REST
+   - **Autenticación**: JWT Bearer Token
+   - **Módulos**: Auth, Alumnos, Profesores, Cursos, Matrículas, Demanda
+
+2. **Predictor de Demanda API (FastAPI)**
+   - **Archivo**: [predictor_demanda_api/README.md](./predictor_demanda_api/README.md)
+   - **Swagger UI**: http://localhost:8000/docs
+   - **ReDoc**: http://localhost:8000/redoc
+   - **Endpoints**: 11 endpoints para predicciones y gestión de modelos ML
+
+3. **Recomendador de Cursos API (FastAPI)**
+   - **Archivo**: [recomendador_cursos_api/API_DOCUMENTATION.md](./recomendador_cursos_api/API_DOCUMENTATION.md)
+   - **Swagger UI**: http://localhost:8001/docs
+   - **Endpoints**: Sistema híbrido de recomendación (colaborativo + contenido)
+
+### 🚀 Inicio Rápido de APIs
+
+```bash
+# 1. Levantar todos los servicios
+docker-compose up -d
+
+# 2. Verificar estado
+curl http://localhost:4000  # Backend
+curl http://localhost:8000  # Predictor
+curl http://localhost:8001/api/health  # Recomendador
+
+# 3. Ver documentación interactiva (FastAPI)
+# Abrir en navegador:
+# - http://localhost:8000/docs (Predictor)
+# - http://localhost:8001/docs (Recomendador)
+```
+
 ## 🔗 Comunicación entre Servicios
 
 Los microservicios se comunican a través de una **red interna de Docker** (`horarios_network`):
@@ -209,11 +252,21 @@ cd predictor_demanda_api && pytest
 cd recomendador_cursos_api && pytest
 ```
 
-## 📚 Documentación
+## 📚 Documentación Completa
 
-- **API Predictor**: http://localhost:8000/docs (Swagger UI)
-- **API Recomendador**: http://localhost:8001/docs (Swagger UI)
-- **Backend**: Consultar README de cada repositorio
+### 📖 Guías de API
+- **[APIs_CONSOLIDADO.md](./APIs_CONSOLIDADO.md)** - Documentación consolidada de las 3 APIs
+- **[backend/API_DOCUMENTATION.md](./backend/API_DOCUMENTATION.md)** - Backend NestJS (40+ endpoints)
+- **[predictor_demanda_api/README.md](./predictor_demanda_api/README.md)** - Predictor ML
+- **[recomendador_cursos_api/API_DOCUMENTATION.md](./recomendador_cursos_api/API_DOCUMENTATION.md)** - Recomendador
+
+### 🌐 Swagger UI Interactivo
+- **API Predictor**: http://localhost:8000/docs
+- **API Recomendador**: http://localhost:8001/docs
+
+### 📝 Otros Documentos
+- **[SUBMODULES_COMMANDS.md](./SUBMODULES_COMMANDS.md)** - Comandos Git para submódulos
+- README de cada repositorio individual
 
 ## 🤝 Equipo de Desarrollo
 
