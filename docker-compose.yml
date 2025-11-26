@@ -18,9 +18,11 @@ services:
       - "${FRONTEND_PORT:-3000}:3000"
     environment:
       - NODE_ENV=${NODE_ENV:-production}
-      - NEXT_PUBLIC_BACKEND_URL=http://backend:${BACKEND_PORT:-4000}
-      - NEXT_PUBLIC_PREDICTOR_URL=http://predictor_demanda_api:${PREDICTOR_PORT:-8000}
-      - NEXT_PUBLIC_RECOMENDADOR_URL=http://recomendador_cursos_api:${RECOMENDADOR_PORT:-8001}
+      # IMPORTANTE: El frontend se ejecuta en el navegador del usuario
+      # Por lo tanto, debe usar localhost (no los nombres de servicio Docker)
+      - NEXT_PUBLIC_BACKEND_URL=http://localhost:${BACKEND_PORT:-3003}
+      - NEXT_PUBLIC_PREDICTOR_URL=http://localhost:${PREDICTOR_PORT:-8000}
+      - NEXT_PUBLIC_RECOMENDADOR_URL=http://localhost:${RECOMENDADOR_PORT:-8001}
     depends_on:
       - backend
       - predictor_demanda_api
@@ -44,10 +46,10 @@ services:
       dockerfile: Dockerfile
     container_name: horarios_backend
     ports:
-      - "${BACKEND_PORT:-4000}:4000"
+      - "${BACKEND_PORT:-3003}:3003"
     environment:
       - NODE_ENV=${NODE_ENV:-production}
-      - PORT=${BACKEND_PORT:-4000}
+      - PORT=3003
       # Variables de base de datos
       - DB_HOST=${DB_HOST}
       - DB_PORT=${DB_PORT:-5432}
@@ -55,19 +57,19 @@ services:
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
-      # URLs de microservicios
-      - PREDICTOR_API_URL=http://predictor_demanda_api:${PREDICTOR_PORT:-8000}
-      - RECOMENDADOR_API_URL=http://recomendador_cursos_api:${RECOMENDADOR_PORT:-8001}
+      # URLs de microservicios (comunicación interna Docker)
+      - PREDICTOR_API_URL=http://predictor_demanda_api:8000
+      - RECOMENDADOR_API_URL=http://recomendador_cursos_api:8001
       # JWT y seguridad
-      - JWT_SECRET=${JWT_SECRET:-change_this_secret_in_production}
-      - JWT_EXPIRATION=${JWT_EXPIRATION:-24h}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRATION:-8h}
     volumes:
       - ./backend/logs:/app/logs
     networks:
       - horarios_network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4000", "||", "exit", "1"]
+      test: ["CMD", "curl", "-f", "http://localhost:3003/api", "||", "exit", "1"]
       interval: 30s
       timeout: 10s
       retries: 3

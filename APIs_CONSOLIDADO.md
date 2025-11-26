@@ -17,10 +17,12 @@ El sistema está compuesto por tres microservicios independientes que se comunic
 ┌────────────────────────────────────────────────────────────┐
 │                     Backend API                             │
 │                   (NestJS/Node.js)                          │
-│                  http://localhost:4000                      │
+│                  http://localhost:3003                      │
 │  • Autenticación JWT                                        │
 │  • CRUD Alumnos, Profesores, Cursos                        │
 │  • Gestión de Matrículas                                    │
+│  • Dashboard por Roles                                      │
+│  • Búsqueda Avanzada                                        │
 └─────┬──────────────────────────────────────┬───────────────┘
       │                                      │
       ▼                                      ▼
@@ -38,40 +40,48 @@ El sistema está compuesto por tres microservicios independientes que se comunic
 
 ## 📚 APIs Disponibles
 
-### 1. Backend API (NestJS) - Puerto 4000
+### 1. Backend API (NestJS) - Puerto 3003
 
-**Descripción**: API principal del sistema que gestiona autenticación, usuarios, cursos, matrículas y coordinación general.
+**Descripción**: API principal del sistema que gestiona autenticación, usuarios, cursos, matrículas, dashboards y coordinación general.
 
 **Tecnologías**: NestJS, TypeScript, Prisma ORM, PostgreSQL, JWT
 
-**Base URL**: `http://localhost:4000`
+**Base URL**: `http://localhost:3003/api`
 
-**Documentación completa**: [backend/API_DOCUMENTATION.md](./backend/API_DOCUMENTATION.md)
+**Documentación completa**: 
+- [backend/API_DOCUMENTATION.md](./backend/API_DOCUMENTATION.md) - Referencia de endpoints
+- [backend/POSTMAN_TESTING_GUIDE.md](./backend/POSTMAN_TESTING_GUIDE.md) - Guía de pruebas
 
 #### 🔑 Endpoints principales:
 
-| Método | Endpoint | Descripción | Auth |
-|--------|----------|-------------|------|
-| POST | `/auth/login` | Iniciar sesión | ❌ |
-| POST | `/auth/logout` | Cerrar sesión | ✅ |
-| GET | `/alumno` | Listar alumnos | ✅ |
-| POST | `/alumno` | Crear alumno | ✅ |
-| POST | `/alumno/upload` | Carga masiva CSV | ✅ |
-| GET | `/profesor` | Listar profesores | ✅ |
-| GET | `/curso` | Listar cursos | ✅ |
-| GET | `/ofertado` | Cursos ofertados | ✅ |
-| POST | `/matricula` | Crear matrícula | ✅ |
-| GET | `/demanda` | Obtener demanda | ❌ |
+| Método | Endpoint | Descripción | Auth | Rol |
+|--------|----------|-------------|------|-----|
+| POST | `/auth/login` | Iniciar sesión | ❌ | - |
+| POST | `/auth/logout` | Cerrar sesión | ✅ | Todos |
+| GET | `/dashboard/me` | Dashboard por rol | ✅ | Todos |
+| GET | `/dashboard/admin` | Dashboard administrativo | ✅ | ADMIN |
+| GET | `/alumno` | Listar alumnos | ✅ | Todos |
+| GET | `/alumno/search/advanced` | Búsqueda avanzada alumnos | ✅ | Todos |
+| POST | `/alumno/upload` | Carga masiva CSV | ✅ | ADMIN |
+| GET | `/profesor/search/advanced` | Búsqueda avanzada profesores | ✅ | Todos |
+| GET | `/curso` | Listar cursos | ✅ | Todos |
+| GET | `/ofertado` | Cursos ofertados | ✅ | Todos |
+| POST | `/ofertado/upload` | Carga masiva CSV | ✅ | ADMIN |
+| POST | `/matricula` | Crear matrícula | ✅ | ADMIN |
 
 **Ejemplo de uso:**
 ```bash
 # Login
-curl -X POST http://localhost:4000/auth/login \
+curl -X POST http://localhost:3003/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email": "alumno@uni.edu.pe", "password": "pass123"}'
+  -d '{"email": "admin@uni.edu.pe", "password": "admin123"}'
 
-# Listar cursos (con token)
-curl http://localhost:4000/curso \
+# Dashboard por rol
+curl http://localhost:3003/api/dashboard/me \
+  -H "Authorization: Bearer <token>"
+
+# Búsqueda avanzada de alumnos
+curl "http://localhost:3003/api/alumno/search/advanced?ciclo_min=4&promedio_min=14" \
   -H "Authorization: Bearer <token>"
 ```
 

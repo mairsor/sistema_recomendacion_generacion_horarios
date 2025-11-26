@@ -64,8 +64,8 @@ docker-compose logs -f backend
 
 Una vez levantados los contenedores:
 
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:4000
+- **Frontend**: http://localhost:3001
+- **Backend API**: http://localhost:3003/api
 - **Predictor de Demanda API**: http://localhost:8000
   - Docs: http://localhost:8000/docs
 - **Recomendador de Cursos API**: http://localhost:8001
@@ -140,9 +140,9 @@ Cada microservicio tiene su propia documentación detallada:
 docker-compose up -d
 
 # 2. Verificar estado
-curl http://localhost:4000  # Backend
-curl http://localhost:8000  # Predictor
-curl http://localhost:8001/api/health  # Recomendador
+curl http://localhost:3003/api     # Backend (debe retornar "Hello World!")
+curl http://localhost:8000         # Predictor
+curl http://localhost:8001/health  # Recomendador
 
 # 3. Ver documentación interactiva (FastAPI)
 # Abrir en navegador:
