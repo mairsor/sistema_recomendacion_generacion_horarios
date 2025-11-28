@@ -1,0 +1,124 @@
+# docker-compose.dev.yml - Configuración para Desarrollo
+# Sistema de Recomendación y Generación de Horarios - UNI
+# Uso: docker-compose -f docker-compose.dev.yml --env-file .env.docker up
+
+version: '3.8'
+
+services:
+  # ========================================
+  # Frontend - Desarrollo con Hot Reload
+  # ========================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: deps  # Solo instalar deps, no build
+    container_name: horarios_frontend_dev
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_BACKEND_URL=${NEXT_PUBLIC_BACKEND_URL:-http://localhost:3003}
+      - NEXT_PUBLIC_PREDICTOR_URL=${NEXT_PUBLIC_PREDICTOR_URL:-http://localhost:8000}
+      - NEXT_PUBLIC_RECOMENDADOR_URL=${NEXT_PUBLIC_RECOMENDADOR_URL:-http://localhost:8001}
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    command: npm run dev
+    networks:
+      - horarios_network
+    restart: unless-stopped
+
+  # ========================================
+  # Backend - Desarrollo con Hot Reload
+  # ========================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: builder
+    container_name: horarios_backend_dev
+    ports:
+      - "${BACKEND_PORT:-3003}:3003"
+    environment:
+      - NODE_ENV=development
+      - PORT=3003
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT:-5432}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DATABASE_URL=${DATABASE_URL}
+      - PREDICTOR_API_URL=http://predictor_demanda_api:8000
+      - RECOMENDADOR_API_URL=http://recomendador_cursos_api:8001
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRATION:-8h}
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - /app/dist
+      - ./backend/logs:/app/logs
+    command: npm run start:dev
+    networks:
+      - horarios_network
+    restart: unless-stopped
+
+  # ========================================
+  # APIs Python - Desarrollo
+  # ========================================
+  predictor_demanda_api:
+    build:
+      context: ./predictor_demanda_api
+      dockerfile: Dockerfile
+    container_name: predictor_demanda_api_dev
+    ports:
+      - "${PREDICTOR_PORT:-8000}:8000"
+    environment:
+      - ENVIRONMENT=development
+      - LOG_LEVEL=debug
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DATABASE_URL=${DATABASE_URL}
+    volumes:
+      - ./predictor_demanda_api:/app
+      - ./predictor_demanda_api/data:/app/data
+      - ./predictor_demanda_api/models:/app/models
+      - ./predictor_demanda_api/results:/app/results
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - horarios_network
+    restart: unless-stopped
+
+  recomendador_cursos_api:
+    build:
+      context: ./recomendador_cursos_api
+      dockerfile: Dockerfile
+    container_name: recomendador_cursos_api_dev
+    ports:
+      - "${RECOMENDADOR_PORT:-8001}:8001"
+    environment:
+      - ENVIRONMENT=development
+      - LOG_LEVEL=debug
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DATABASE_URL=${DATABASE_URL}
+    volumes:
+      - ./recomendador_cursos_api:/app
+      - ./recomendador_cursos_api/models:/app/models
+      - ./recomendador_cursos_api/data:/app/data
+    command: python -m uvicorn apy:app --host 0.0.0.0 --port 8001 --reload
+    networks:
+      - horarios_network
+    restart: unless-stopped
+
+networks:
+  horarios_network:
+    driver: bridge
+    name: horarios_network_dev
