@@ -526,9 +526,11 @@ Como tutor, tiene acceso a las mismas herramientas de predicción que los alumno
 
 ## MANUAL PARA EL ROL: ADMINISTRADOR
 
+El panel de administrador le da acceso a tres módulos principales: **Gestión de Matrícula**, **Recomendador de Horarios** y **Predictor de Demanda**.
+
 ### 5.1 Dashboard Administrativo
 
-Vista general con estadísticas globales del sistema.
+Vista general con estadísticas globales del sistema académico.
 
 **[ESPACIO PARA CAPTURA: Dashboard administrativo completo]**
 
@@ -643,30 +645,183 @@ Panel informativo con:
 
 ---
 
-### 5.2 Vista de Estudiantes
+### 5.2 Gestión de Matrícula
 
-**Acceso:** Menú > Vista de Estudiantes (o similar)
+Módulo para administrar cursos y secciones del sistema académico.
 
-Lista completa de todos los estudiantes del sistema con sus estadísticas básicas.
+#### **5.2.1 Gestión de Cursos**
 
-**Funcionalidad:**
+**Acceso:** Menú lateral > Gestión de Matrícula > Cursos
 
-- Tabla con todos los alumnos
-- Datos: código, nombre, ciclo, promedio, créditos
-- Ordenamiento por columnas
-- Búsqueda rápida
+Vista de todos los cursos disponibles en el catálogo institucional.
 
-**[ESPACIO PARA CAPTURA: Vista de estudiantes]**
+**Funcionalidades:**
+
+- Tabla con listado de cursos
+- Información: código, nombre, créditos, estado
+- Búsqueda y filtrado de cursos
+- Vista detallada de cada curso
+
+**[ESPACIO PARA CAPTURA: Página de gestión de cursos]**
+
+> **📌 NOTA:** Esta sección permite consultar el catálogo de cursos registrados en el sistema.
+
+#### **5.2.2 Gestión de Secciones**
+
+**Acceso:** Menú lateral > Gestión de Matrícula > Secciones
+
+Vista de las secciones ofertadas por semestre.
+
+**Funcionalidades:**
+
+- Listado de secciones por curso
+- Información: profesor asignado, horario, cupos
+- Filtrado por semestre y curso
+- Detalles de matrícula por sección
+
+**[ESPACIO PARA CAPTURA: Página de gestión de secciones]**
 
 ---
 
-### 5.3 Predicción de Demanda
+### 5.3 Recomendador de Horarios
 
-Como administrador, tiene acceso completo al sistema de predicción:
+Sistema de análisis y recomendación académica usando Machine Learning.
 
-#### **5.3.1 Generar Predicciones**
+#### **5.3.1 Estadísticas del Sistema**
 
-**Acceso:** Menú > Predicción de Demanda > Predictor
+**Acceso:** Menú lateral > Recomendador de Horarios > Estadísticas del Sistema
+
+Vista general de métricas del sistema de recomendación.
+
+**[ESPACIO PARA CAPTURA: Página de estadísticas del sistema]**
+
+**Estadísticas Principales:**
+
+**Tarjeta 1: Total Estudiantes**
+- Número de estudiantes registrados en el sistema de recomendación
+
+**Tarjeta 2: Total Cursos**
+- Cursos disponibles en el catálogo
+
+**Tarjeta 3: Registros Totales**
+- Total de matrículas históricas procesadas
+
+**Tarjeta 4: Líneas de Carrera**
+- Número de líneas académicas definidas
+
+**[ESPACIO PARA CAPTURA: Tarjetas de estadísticas principales]**
+
+**Información de Modelos ML:**
+
+El sistema muestra métricas de los 3 modelos de Machine Learning implementados:
+
+**1. Knowledge Graph**
+- **Nodos:** Entidades en el grafo de conocimiento
+- **Conexiones:** Relaciones entre cursos y conceptos
+- **Embeddings:** Vectores de representación generados
+
+**2. Collaborative Filtering**
+- **Factores latentes:** Dimensión del espacio latente
+- **Algoritmo:** ALS (Alternating Least Squares)
+
+**3. Modelo Híbrido**
+- **Dimensión:** Tamaño de los embeddings
+- **Arquitectura:** MLP (Multi-Layer Perceptron)
+
+**[ESPACIO PARA CAPTURA: Panel de modelos ML]**
+
+**Distribución por Líneas de Carrera:**
+
+Gráfico de barras mostrando:
+
+- Cada línea de carrera disponible
+- Número de cursos en cada línea
+- Porcentaje respecto al total
+- Barra de progreso visual
+
+**[ESPACIO PARA CAPTURA: Distribución por líneas]**
+
+**Métricas Promedio del Sistema:**
+
+**1. Promedio Cursos/Estudiante**
+- Cuántos cursos ha llevado cada estudiante en promedio
+
+**2. Densidad de Datos**
+- Porcentaje de cobertura de la matriz estudiante-curso
+- Indica qué tan completos están los datos
+
+**3. Cursos por Línea**
+- Distribución promedio de cursos entre líneas de carrera
+
+**[ESPACIO PARA CAPTURA: Tarjetas de métricas promedio]**
+
+#### **5.3.2 Gestión de Estudiantes**
+
+**Acceso:** Menú lateral > Recomendador de Horarios > Gestión de Estudiantes
+
+Vista completa de todos los estudiantes en el sistema de recomendación.
+
+**[ESPACIO PARA CAPTURA: Página de gestión de estudiantes]**
+
+**Estadísticas Generales (4 Tarjetas):**
+
+1. **Total Estudiantes:** Registrados en el sistema
+2. **Promedio General:** Nota promedio de todos los estudiantes
+3. **Progreso Promedio:** Avance de carrera promedio
+4. **Cursos Reprobados:** Total en el sistema
+
+**[ESPACIO PARA CAPTURA: Tarjetas estadísticas generales]**
+
+**Panel Izquierdo - Lista de Estudiantes:**
+
+- **Barra de búsqueda:** Filtrar por código de estudiante
+- **Lista completa:** Todos los estudiantes con:
+  - Código del estudiante
+  - Porcentaje de progreso
+  - Promedio ponderado (con ⭐)
+  - Badge de color según rendimiento
+  - Icono de tendencia
+- **Selección:** Clic para ver detalles completos
+
+**[ESPACIO PARA CAPTURA: Panel de lista de estudiantes]**
+
+**Panel Derecho - Detalles del Estudiante:**
+
+Cuando selecciona un estudiante, se muestra:
+
+**Información Básica:**
+- Código del estudiante
+- Nota promedio
+
+**Progreso de Carrera:**
+- Barra de progreso visual
+- Porcentaje completado
+
+**Estadísticas:**
+- **Cursos Completados:** Total aprobados
+- **Cursos Reprobados:** Total desaprobados
+
+**Mejor Línea de Carrera:**
+- Badge con el nombre de la línea
+- Basado en desempeño histórico
+
+**Información Adicional:**
+- Cursos en progreso estimados
+- Tasa de aprobación calculada
+
+**[ESPACIO PARA CAPTURA: Panel de detalles del estudiante]**
+
+> **💡 CONSEJO:** Use la búsqueda para encontrar estudiantes rápidamente por su código.
+
+---
+
+### 5.4 Predictor de Demanda
+
+Como administrador, tiene acceso completo al sistema de predicción de demanda.
+
+#### **5.4.1 Generar Predicciones**
+
+**Acceso:** Menú lateral > Predictor de Demanda > Predicciones
 
 **Funcionalidad:**
 
@@ -677,9 +832,9 @@ Como administrador, tiene acceso completo al sistema de predicción:
 
 **[ESPACIO PARA CAPTURA: Interfaz de generación de predicciones]**
 
-#### **5.3.2 Ver Resultados**
+#### **5.4.2 Ver Resultados**
 
-**Acceso:** Menú > Predicción de Demanda > Resultados
+**Acceso:** Menú lateral > Predictor de Demanda > Resultados
 
 - Consulta de predicciones generadas
 - Filtros por curso, semestre, modelo
@@ -687,9 +842,9 @@ Como administrador, tiene acceso completo al sistema de predicción:
 
 **[ESPACIO PARA CAPTURA: Resultados de predicciones]**
 
-#### **5.3.3 Modelos de Predicción**
+#### **5.4.3 Modelos ML**
 
-**Acceso:** Menú > Predicción de Demanda > Modelos
+**Acceso:** Menú lateral > Predictor de Demanda > Modelos ML
 
 Información sobre los modelos disponibles:
 
