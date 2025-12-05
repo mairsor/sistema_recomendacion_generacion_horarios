@@ -12,9 +12,9 @@ services:
       dockerfile: Dockerfile
       args:
         # Variables de build-time para Next.js
-        - NEXT_PUBLIC_BACKEND_URL=${NEXT_PUBLIC_BACKEND_URL:-http://localhost:3003}
-        - NEXT_PUBLIC_PREDICTOR_URL=${NEXT_PUBLIC_PREDICTOR_URL:-http://localhost:8000}
-        - NEXT_PUBLIC_RECOMENDADOR_URL=${NEXT_PUBLIC_RECOMENDADOR_URL:-http://localhost:8001}
+        - NEXT_PUBLIC_BACKEND_URL=${NEXT_PUBLIC_BACKEND_URL:-http://localhost:3004}
+        - NEXT_PUBLIC_PREDICTOR_URL=${NEXT_PUBLIC_PREDICTOR_URL:-http://localhost:8002}
+        - NEXT_PUBLIC_RECOMENDADOR_URL=${NEXT_PUBLIC_RECOMENDADOR_URL:-http://localhost:8003}
     container_name: horarios_frontend
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
@@ -22,9 +22,9 @@ services:
       - NODE_ENV=${NODE_ENV:-production}
       # IMPORTANTE: El frontend se ejecuta en el navegador del usuario
       # Por lo tanto, debe usar localhost (no los nombres de servicio Docker)
-      - NEXT_PUBLIC_BACKEND_URL=${NEXT_PUBLIC_BACKEND_URL:-http://localhost:3003}
-      - NEXT_PUBLIC_PREDICTOR_URL=${NEXT_PUBLIC_PREDICTOR_URL:-http://localhost:8000}
-      - NEXT_PUBLIC_RECOMENDADOR_URL=${NEXT_PUBLIC_RECOMENDADOR_URL:-http://localhost:8001}
+      - NEXT_PUBLIC_BACKEND_URL=${NEXT_PUBLIC_BACKEND_URL:-http://localhost:3004}
+      - NEXT_PUBLIC_PREDICTOR_URL=${NEXT_PUBLIC_PREDICTOR_URL:-http://localhost:8002}
+      - NEXT_PUBLIC_RECOMENDADOR_URL=${NEXT_PUBLIC_RECOMENDADOR_URL:-http://localhost:8003}
     depends_on:
       backend:
         condition: service_healthy
@@ -51,10 +51,10 @@ services:
       dockerfile: Dockerfile
     container_name: horarios_backend
     ports:
-      - "${BACKEND_PORT:-3003}:3003"
+      - "${BACKEND_PORT:-3004}:3004"
     environment:
       - NODE_ENV=${NODE_ENV:-production}
-      - PORT=3003
+      - PORT=3004
       # Variables de base de datos
       - DB_HOST=${DB_HOST}
       - DB_PORT=${DB_PORT:-5432}
@@ -63,8 +63,8 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - DATABASE_URL=${DATABASE_URL:-postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}}
       # URLs de microservicios (comunicación interna Docker)
-      - PREDICTOR_API_URL=${PREDICTOR_API_URL:-http://predictor_demanda_api:8000}
-      - RECOMENDADOR_API_URL=${RECOMENDADOR_API_URL:-http://recomendador_cursos_api:8001}
+      - PREDICTOR_API_URL=${PREDICTOR_API_URL:-http://predictor_demanda_api:8002}
+      - RECOMENDADOR_API_URL=${RECOMENDADOR_API_URL:-http://recomendador_cursos_api:8003}
       # JWT y seguridad
       - JWT_SECRET=${JWT_SECRET}
       - JWT_EXPIRES_IN=${JWT_EXPIRATION:-8h}
@@ -83,7 +83,7 @@ services:
       - horarios_network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3003/api || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:3004/api || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -98,7 +98,7 @@ services:
       dockerfile: Dockerfile
     container_name: predictor_demanda_api
     ports:
-      - "${PREDICTOR_PORT:-8000}:8000"
+      - "${PREDICTOR_PORT:-8002}:8002"
     environment:
       - ENVIRONMENT=${ENVIRONMENT:-production}
       - LOG_LEVEL=${LOG_LEVEL:-info}
@@ -120,7 +120,7 @@ services:
       - horarios_network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8000/docs || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8002/docs || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -135,7 +135,7 @@ services:
       dockerfile: Dockerfile
     container_name: recomendador_cursos_api
     ports:
-      - "${RECOMENDADOR_PORT:-8001}:5000"
+      - "${RECOMENDADOR_PORT:-8003}:5000"
     environment:
       - ENVIRONMENT=${ENVIRONMENT:-production}
       - LOG_LEVEL=${LOG_LEVEL:-info}
